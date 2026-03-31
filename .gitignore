@@ -1,0 +1,12 @@
+# Local secrets and machine-specific config
+.env
+
+# Python cache/artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS/editor files
+.DS_Store
+.vscode/
