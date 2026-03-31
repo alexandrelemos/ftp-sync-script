@@ -20,12 +20,12 @@ FTP_PASS = "PASSWORD_HERE"
 FTP_PATH = "/htdocs"
 
 LOCAL_DIR = Path(__file__).parent.parent
-FTP_IGNORE_FILE = Path(__file__).parent / ".FtpIgnore"
+FTP_IGNORE_FILE = Path(__file__).parent / ".ftpignore"
 IGNORE_FILES = {'.vscode', '.git', '.DS_Store', 'node_modules', '.gitignore', 'sync.py', '.ftpkr.json', 'vscode', '.gitkeep', '.prettierrc'}
 IGNORE_DIRS = {'.vscode', '.git', '__pycache__', 'node_modules', 'vscode'}
 
 def load_ftp_ignore_patterns():
-    """Load ignore patterns from .FtpIgnore file next to this script."""
+    """Load ignore patterns from .ftpignore file next to this script."""
     patterns = []
     if not FTP_IGNORE_FILE.exists():
         return patterns
