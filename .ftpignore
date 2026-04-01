@@ -1,6 +1,3 @@
-# Ignore temporary gestor template
-//al-page-gd/restaurante/gestao/tmp_html_gestor.html
-
-# Ignore all Markdown files inside al-page-gd
-//al-page-gd/*.md
-//al-page-gd/**/*.md
+# Ignore documentation files
+*.md
+*.txt

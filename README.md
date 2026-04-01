@@ -11,7 +11,7 @@ This repository was built as a learning-oriented tool to support my web developm
 - Delete remote orphan files (within current script behavior)
 - Ignore paths via `.ftpignore`
 - Externalized configuration via `.env`
-- Defaults to syncing only `al-page-gd` under your workspace
+- Configurable workspace paths via environment variables
 
 ## Technologies
 
@@ -73,29 +73,29 @@ Common optional values:
 
 ## .ftpignore Patterns
 
-The script supports glob-like matching with plain and prefixed candidates.
+The script supports glob-like matching to exclude files and directories from synchronization.
 
 Examples:
 
 ```txt
-# Ignore a specific file
-al-page-gd/restaurante/gestao/tmp_html_gestor.html
+# Ignore documentation files
+*.md
+*.txt
 
-# Ignore Markdown files under al-page-gd
-al-page-gd/*.md
-al-page-gd/**/*.md
+# Ignore a specific file in a subdirectory
+path/to/temporary_file.html
 ```
 
-## Educational Context
+## Educational & Professional Context
 
-I (Al) am a student and this project is primarily educational. It is shared publicly because it may still be useful for others and because open feedback helps improve implementation quality.
+This project is designed as a lightweight, reusable tool for developers who need reliable FTP synchronization without complex dependencies. It prioritizes simplicity, transparency, and educational value.
 
-## AI Usage Disclosure
+## Development Notes
 
-Parts of this project were developed with AI assistance for drafting, refactoring, and documentation support. Final review, validation, and responsibility remain with the repository owner.
+This project was developed with an emphasis on clarity, maintainability, and pragmatic design decisions. The code prioritizes readability and ease of customization for different deployment scenarios.
 
 ## License
 
 This project is licensed under the **BSD 3-Clause License**.
 
-For legal terms, see `LICENSE`. Attribution to the original author (`Alexandre Lemos (Al)`) must be preserved in redistributions.
+For legal terms, see `LICENSE`.
