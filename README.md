@@ -97,10 +97,11 @@ python3 syncftp.py setup-vscode
 
 **What it does:**
 - Creates/updates `.vscode/tasks.json` in your workspace
-- Adds three new tasks:
+- Adds four new tasks for fast FTP operations:
   - **FTP Upload (syncftp)** — full sync with orphan cleanup
   - **FTP Download (syncftp)** — download specified files
-  - **FTP: Upload Single File (syncftp)** — quick file upload with input prompt
+  - **FTP: Upload Current File (syncftp)** — upload the file you're currently editing
+  - **FTP: Upload File (with prompt)** — upload any file (path pre-filled from current file)
 
 **How to use:**
 1. Run `python3 syncftp.py setup-vscode` once
@@ -108,9 +109,23 @@ python3 syncftp.py setup-vscode
 3. Type "Tasks: Run Task"
 4. Select your desired FTP task
 
+**Quick workflows:**
+
+*Scenario 1: Upload the file you're editing*
+- Open `restaurante/gestao/painel.php`
+- Run task "FTP: Upload Current File (syncftp)"
+- ✅ Instant upload, no prompts
+
+*Scenario 2: Upload a different file*
+- Run task "FTP: Upload File (with prompt)"
+- Prompt appears with current file path pre-filled
+- Edit or confirm the path
+- ✅ Upload starts
+
 **Benefits:**
 - No need to open terminal for common operations
-- Input prompts for file paths
+- Auto-detection of current file for instant uploads
+- Pre-filled prompts reduce typing
 - Integration directly in VS Code workflow
 
 ## Configuration

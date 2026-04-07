@@ -424,7 +424,16 @@ def setup_vscode(config: Config) -> None:
                 "problemMatcher": []
             },
             {
-                "label": "FTP: Upload Single File (syncftp)",
+                "label": "FTP: Upload Current File (syncftp)",
+                "type": "shell",
+                "command": "python3",
+                "args": [str(syncftp_script_path), "upload-file", "${relativeFileDirname}/${file}"],
+                "presentation": {"reveal": "always", "panel": "new"},
+                "problemMatcher": [],
+                "group": {"kind": "build", "isDefault": False}
+            },
+            {
+                "label": "FTP: Upload File (with prompt)",
                 "type": "shell",
                 "command": "python3",
                 "args": [str(syncftp_script_path), "upload-file", "${input:ftpFilePath}"],
@@ -439,7 +448,8 @@ def setup_vscode(config: Config) -> None:
                 "id": "ftpFilePath",
                 "type": "promptString",
                 "description": f"Enter relative file path (from {config.site_subdir})",
-                "detail": f"Example: restaurante/gestao/painel.php"
+                "detail": f"Example: restaurante/gestao/painel.php",
+                "value": "${relativeFile}"
             }
         ]
 
@@ -463,9 +473,10 @@ def setup_vscode(config: Config) -> None:
         tasks_json_path.write_text(json.dumps(existing_content, indent=2), encoding="utf-8")
         print(f"✅ VS Code tasks configured: {tasks_json_path}")
         print("   Available tasks:")
-        print("   - FTP Upload (syncftp)")
-        print("   - FTP Download (syncftp)")
-        print("   - FTP: Upload Single File (syncftp)")
+        print("   - FTP Upload (syncftp) — Full sync with orphan cleanup")
+        print("   - FTP Download (syncftp) — Download configured files")
+        print("   - FTP: Upload Current File (syncftp) — Upload file/folder you're editing")
+        print("   - FTP: Upload File (with prompt) — Upload with custom path (pre-filled)")
 
     except Exception as exc:
         print(f"✗ Error setting up VS Code tasks: {exc}", file=sys.stderr)
