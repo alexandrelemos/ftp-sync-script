@@ -6,18 +6,21 @@ Public-ready FTP sync script.
 - Uploads files and optionally removes remote orphans.
 - Supports ignore rules via .ftpignore.
 - Uses environment variables or a local .env file for configuration.
+- Integrates with VS Code tasks.json for seamless workflow.
 
 Usage:
   python3 syncftp.py upload
   python3 syncftp.py download
   python3 syncftp.py sync
   python3 syncftp.py upload-file <relative_path>
+  python3 syncftp.py setup-vscode
 """
 
 from __future__ import annotations
 
 import ftplib
 import fnmatch
+import json
 import os
 import sys
 from dataclasses import dataclass
@@ -394,16 +397,92 @@ def upload_file(config: Config, target_path: str) -> None:
         sys.exit(1)
 
 
+def setup_vscode(config: Config) -> None:
+    """Generate VS Code tasks.json configuration for syncftp integration."""
+    try:
+        vscode_dir = config.workspace_dir / ".vscode"
+        tasks_json_path = vscode_dir / "tasks.json"
+
+        syncftp_script_path = SCRIPT_DIR / "syncftp.py"
+
+        new_tasks = [
+            {
+                "label": "FTP Upload (syncftp)",
+                "type": "shell",
+                "command": "python3",
+                "args": [str(syncftp_script_path), "upload"],
+                "presentation": {"reveal": "always", "panel": "new"},
+                "group": {"kind": "build", "isDefault": False},
+                "problemMatcher": []
+            },
+            {
+                "label": "FTP Download (syncftp)",
+                "type": "shell",
+                "command": "python3",
+                "args": [str(syncftp_script_path), "download"],
+                "presentation": {"reveal": "always", "panel": "new"},
+                "problemMatcher": []
+            },
+            {
+                "label": "FTP: Upload Single File (syncftp)",
+                "type": "shell",
+                "command": "python3",
+                "args": [str(syncftp_script_path), "upload-file", "${input:ftpFilePath}"],
+                "presentation": {"reveal": "always", "panel": "new"},
+                "problemMatcher": [],
+                "group": {"kind": "build", "isDefault": False}
+            }
+        ]
+
+        inputs = [
+            {
+                "id": "ftpFilePath",
+                "type": "promptString",
+                "description": f"Enter relative file path (from {config.site_subdir})",
+                "detail": f"Example: restaurante/gestao/painel.php"
+            }
+        ]
+
+        if tasks_json_path.exists():
+            existing_content = json.loads(tasks_json_path.read_text(encoding="utf-8"))
+            existing_tasks = existing_content.get("tasks", [])
+            existing_inputs = existing_content.get("inputs", [])
+
+            filtered_tasks = [t for t in existing_tasks if not t.get("label", "").startswith("FTP")]
+            all_tasks = filtered_tasks + new_tasks
+
+            filtered_inputs = [i for i in existing_inputs if i.get("id") != "ftpFilePath"]
+            all_inputs = filtered_inputs + inputs
+
+            existing_content["tasks"] = all_tasks
+            existing_content["inputs"] = all_inputs
+        else:
+            vscode_dir.mkdir(parents=True, exist_ok=True)
+            existing_content = {"version": "2.0.0", "tasks": new_tasks, "inputs": inputs}
+
+        tasks_json_path.write_text(json.dumps(existing_content, indent=2), encoding="utf-8")
+        print(f"✅ VS Code tasks configured: {tasks_json_path}")
+        print("   Available tasks:")
+        print("   - FTP Upload (syncftp)")
+        print("   - FTP Download (syncftp)")
+        print("   - FTP: Upload Single File (syncftp)")
+
+    except Exception as exc:
+        print(f"✗ Error setting up VS Code tasks: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+
 def main() -> None:
     config = load_config()
 
     if len(sys.argv) < 2:
-        print("Usage: python3 syncftp.py [upload|download|sync|upload-file]")
+        print("Usage: python3 syncftp.py [upload|download|sync|upload-file|setup-vscode]")
         print("  upload        - Upload all local files and delete remote orphans")
         print("  download      - Download selected files from server")
         print("  sync          - Alias to upload")
         print("  upload-file   - Upload a single file (without removing orphans)")
         print("                  Usage: python3 syncftp.py upload-file <relative_path>")
+        print("  setup-vscode  - Generate VS Code tasks.json configuration")
         sys.exit(1)
 
     command = sys.argv[1].lower().strip()
@@ -425,6 +504,9 @@ def main() -> None:
         target_file = sys.argv[2]
         print(f"📄 Uploading single file: {target_file}")
         upload_file(config, target_file)
+    elif command == "setup-vscode":
+        print("🔧 Setting up VS Code tasks...")
+        setup_vscode(config)
     else:
         print(f"Unknown command: {command}")
         sys.exit(1)

@@ -10,6 +10,7 @@ This repository was built as a learning-oriented tool to support my web developm
 - Keep local files as source of truth
 - Delete remote orphan files (within current script behavior)
 - **Upload individual files for quick fixes** (new in this version)
+- **VS Code integration with tasks.json** (new in this version)
 - Ignore paths via `.ftpignore`
 - Externalized configuration via `.env`
 - Configurable workspace paths via environment variables
@@ -86,6 +87,31 @@ python3 syncftp.py upload-file restaurante/gestao/painel.php
 **Use case:** Quick bug fixes during development.
 
 **⚠️ Important:** Single-file upload does **not** remove remote orphans. After uploading fixes, run `sync` to ensure full consistency.
+
+### `setup-vscode` (NEW)
+Generates VS Code `tasks.json` configuration for syncftp integration.
+
+```bash
+python3 syncftp.py setup-vscode
+```
+
+**What it does:**
+- Creates/updates `.vscode/tasks.json` in your workspace
+- Adds three new tasks:
+  - **FTP Upload (syncftp)** — full sync with orphan cleanup
+  - **FTP Download (syncftp)** — download specified files
+  - **FTP: Upload Single File (syncftp)** — quick file upload with input prompt
+
+**How to use:**
+1. Run `python3 syncftp.py setup-vscode` once
+2. In VS Code, press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Linux/Windows)
+3. Type "Tasks: Run Task"
+4. Select your desired FTP task
+
+**Benefits:**
+- No need to open terminal for common operations
+- Input prompts for file paths
+- Integration directly in VS Code workflow
 
 ## Configuration
 
