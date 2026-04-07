@@ -9,6 +9,7 @@ This repository was built as a learning-oriented tool to support my web developm
 - Upload local files to an FTP server
 - Keep local files as source of truth
 - Delete remote orphan files (within current script behavior)
+- **Upload individual files for quick fixes** (new in this version)
 - Ignore paths via `.ftpignore`
 - Externalized configuration via `.env`
 - Configurable workspace paths via environment variables
@@ -42,6 +43,49 @@ python3 syncftp.py upload
 python3 syncftp.py download
 python3 syncftp.py sync
 ```
+
+## Commands
+
+### `upload` / `sync`
+Uploads all local files and removes remote files not present locally (full synchronization).
+
+```bash
+python3 syncftp.py upload
+# or (alias):
+python3 syncftp.py sync
+```
+
+**Use case:** Complete deployment or full site synchronization.
+
+**Note:** Deletes remote orphans—use with caution.
+
+### `download`
+Downloads specific files from the server (configured in `.env` via `DOWNLOAD_FILES`).
+
+```bash
+python3 syncftp.py download
+```
+
+### `upload-file` (NEW)
+Uploads a single file without removing remote orphans.
+
+```bash
+python3 syncftp.py upload-file <relative_path>
+```
+
+**Examples:**
+
+```bash
+# Upload a file in the root
+python3 syncftp.py upload-file index.html
+
+# Upload a file in a subdirectory
+python3 syncftp.py upload-file restaurante/gestao/painel.php
+```
+
+**Use case:** Quick bug fixes during development.
+
+**⚠️ Important:** Single-file upload does **not** remove remote orphans. After uploading fixes, run `sync` to ensure full consistency.
 
 ## Configuration
 

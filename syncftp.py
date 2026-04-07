@@ -11,6 +11,7 @@ Usage:
   python3 syncftp.py upload
   python3 syncftp.py download
   python3 syncftp.py sync
+  python3 syncftp.py upload-file <relative_path>
 """
 
 from __future__ import annotations
@@ -346,14 +347,63 @@ def download(config: Config) -> None:
         sys.exit(1)
 
 
+def upload_file(config: Config, target_path: str) -> None:
+    """Upload a single file without removing remote orphans."""
+    try:
+        validate_config(config)
+
+        target_normalized = target_path.replace("\\", "/").lstrip("/")
+        local_file = config.local_dir / target_normalized
+
+        if not local_file.exists():
+            print(f"✗ File not found: {local_file}", file=sys.stderr)
+            sys.exit(1)
+
+        if not local_file.is_file():
+            print(f"✗ Not a file (is a directory?): {local_file}", file=sys.stderr)
+            sys.exit(1)
+
+        ftp = connect_ftp(config)
+
+        remote_dir = "/".join(target_normalized.split("/")[:-1])
+        if remote_dir:
+            dirs_to_create = remote_dir.split("/")
+            for i, _ in enumerate(dirs_to_create):
+                cumulative_path = "/".join(dirs_to_create[: i + 1])
+                full_remote_path = f"{config.ftp_path}/{cumulative_path}"
+                try:
+                    ftp.mkd(full_remote_path)
+                    print(f"  📁 Created directory: {cumulative_path}")
+                except ftplib.error_perm:
+                    pass
+
+        try:
+            full_remote_path = f"{config.ftp_path}/{target_normalized}"
+            with open(local_file, "rb") as local_handle:
+                ftp.storbinary(f"STOR {full_remote_path}", local_handle)
+            print(f"\n✅ Successfully uploaded: {target_normalized}")
+        except Exception as exc:
+            print(f"✗ Upload failed for {target_normalized}: {exc}", file=sys.stderr)
+            ftp.quit()
+            sys.exit(1)
+
+        ftp.quit()
+        print("⚠️  Note: Single file upload. Run 'sync' or 'upload' to remove remote orphans.")
+    except Exception as exc:
+        print(f"✗ Error: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+
 def main() -> None:
     config = load_config()
 
     if len(sys.argv) < 2:
-        print("Usage: python3 syncftp.py [upload|download|sync]")
-        print("  upload   - Upload local files and delete remote files not in local")
-        print("  download - Download selected files from server")
-        print("  sync     - Alias to upload")
+        print("Usage: python3 syncftp.py [upload|download|sync|upload-file]")
+        print("  upload        - Upload all local files and delete remote orphans")
+        print("  download      - Download selected files from server")
+        print("  sync          - Alias to upload")
+        print("  upload-file   - Upload a single file (without removing orphans)")
+        print("                  Usage: python3 syncftp.py upload-file <relative_path>")
         sys.exit(1)
 
     command = sys.argv[1].lower().strip()
@@ -364,6 +414,17 @@ def main() -> None:
         upload(config)
     elif command == "download":
         download(config)
+    elif command == "upload-file":
+        if len(sys.argv) < 3:
+            print("✗ Missing file path argument", file=sys.stderr)
+            print("Usage: python3 syncftp.py upload-file <relative_path>", file=sys.stderr)
+            print("Examples:", file=sys.stderr)
+            print("  python3 syncftp.py upload-file painel.php", file=sys.stderr)
+            print("  python3 syncftp.py upload-file restaurante/gestao/painel.php", file=sys.stderr)
+            sys.exit(1)
+        target_file = sys.argv[2]
+        print(f"📄 Uploading single file: {target_file}")
+        upload_file(config, target_file)
     else:
         print(f"Unknown command: {command}")
         sys.exit(1)
