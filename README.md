@@ -71,8 +71,12 @@ python3 syncftp.py download
 Uploads a single file without removing remote orphans.
 
 ```bash
-python3 syncftp.py upload-file <relative_path>
+python3 syncftp.py upload-file <relative_path> [--strip-prefix <prefix>]
 ```
+
+**Parameters:**
+- `<relative_path>` — Path to file relative to workspace or with a prefix to strip
+- `--strip-prefix <prefix>` (optional) — Remove this prefix from the path before uploading
 
 **Examples:**
 
@@ -80,11 +84,16 @@ python3 syncftp.py upload-file <relative_path>
 # Upload a file in the root
 python3 syncftp.py upload-file index.html
 
-# Upload a file in a subdirectory
+# Upload a file in a subdirectory (site-relative)
 python3 syncftp.py upload-file restaurante/gestao/painel.php
+
+# Upload with workspace-relative path and strip prefix
+python3 syncftp.py upload-file al-page-gd/restaurante/gestao/painel.php --strip-prefix al-page-gd
+
+# Result: uploads as "restaurante/gestao/painel.php" to server
 ```
 
-**Use case:** Quick bug fixes during development.
+**Use case:** Quick bug fixes during development. The `--strip-prefix` option is especially useful when integrating with VS Code tasks that use `${relativeFile}` (which may include workspace structure).
 
 **⚠️ Important:** Single-file upload does **not** remove remote orphans. After uploading fixes, run `sync` to ensure full consistency.
 

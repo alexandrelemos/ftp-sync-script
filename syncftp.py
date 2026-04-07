@@ -350,12 +350,23 @@ def download(config: Config) -> None:
         sys.exit(1)
 
 
-def upload_file(config: Config, target_path: str) -> None:
+def upload_file(config: Config, target_path: str, strip_prefix: str | None = None) -> None:
     """Upload a single file without removing remote orphans."""
     try:
         validate_config(config)
 
         target_normalized = target_path.replace("\\", "/").lstrip("/")
+
+        # Strip prefix if provided
+        if strip_prefix:
+            strip_prefix_normalized = strip_prefix.replace("\\", "/").rstrip("/")
+            if target_normalized.startswith(strip_prefix_normalized + "/"):
+                target_normalized = target_normalized[len(strip_prefix_normalized) + 1:]
+            elif target_normalized.startswith(strip_prefix_normalized):
+                target_normalized = target_normalized[len(strip_prefix_normalized):]
+                if target_normalized.startswith("/"):
+                    target_normalized = target_normalized[1:]
+
         local_file = config.local_dir / target_normalized
 
         if not local_file.exists():
@@ -507,14 +518,23 @@ def main() -> None:
     elif command == "upload-file":
         if len(sys.argv) < 3:
             print("✗ Missing file path argument", file=sys.stderr)
-            print("Usage: python3 syncftp.py upload-file <relative_path>", file=sys.stderr)
+            print("Usage: python3 syncftp.py upload-file <relative_path> [--strip-prefix <prefix>]", file=sys.stderr)
             print("Examples:", file=sys.stderr)
             print("  python3 syncftp.py upload-file painel.php", file=sys.stderr)
             print("  python3 syncftp.py upload-file restaurante/gestao/painel.php", file=sys.stderr)
+            print("  python3 syncftp.py upload-file al-page-gd/restaurante/gestao/painel.php --strip-prefix al-page-gd", file=sys.stderr)
             sys.exit(1)
         target_file = sys.argv[2]
+
+        # Parse optional --strip-prefix flag
+        strip_prefix: str | None = None
+        if len(sys.argv) > 4 and sys.argv[3] == "--strip-prefix":
+            strip_prefix = sys.argv[4]
+
         print(f"📄 Uploading single file: {target_file}")
-        upload_file(config, target_file)
+        if strip_prefix:
+            print(f"   (stripping prefix: '{strip_prefix}')")
+        upload_file(config, target_file, strip_prefix=strip_prefix)
     elif command == "setup-vscode":
         print("🔧 Setting up VS Code tasks...")
         setup_vscode(config)
